@@ -84,9 +84,7 @@ class VLAE(VAE):
         self.update_lr=update_lr
 
     def update_rate(self, t):
-        # return self.update_lr / (t+1)
-        # return 1.0
-        return 0.9**t
+        return self.update_lr / (t+1)
 
     def solve_mu(self, x, mu_prev, p_x_z, W_dec):
         var_inv = torch.exp(-self.decoder.logvar).unsqueeze(1)
