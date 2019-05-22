@@ -46,7 +46,7 @@ tensorboard --logdir=<path_to_your_checkpoint_direcoty
 
 ## Results
 Example run results using `logit_transform=True`.
-![alt text](https://github.com/yookoon/VLAE/tree/master/misc/vlae_results.png)
+![alt text](misc/vlae_results.png)
 
 ## Citation
 ```
