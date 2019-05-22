@@ -46,7 +46,7 @@ class MNIST():
                 train = torch.log(train) - torch.log(1.0 - train)
 
             self.mean = train.mean(0)
-            self.std = ((train - self.mean)**2).mean().sqrt()
+            self.std = ((train - self.mean)**2).view([-1] + self.dim).sum(1).mean().sqrt()
 
     def preprocess(self, x):
         if self.binarize:
@@ -75,11 +75,14 @@ class MNIST():
 
 
 class FashionMNIST():
-    def __init__(self, batch_size, binarize=False):
+    def __init__(self, batch_size, binarize=False, logit_transform=False):
         """ [-1, 1, 28, 28]
         """
         if binarize:
             raise NotImplementedError
+
+        self.logit_transform = logit_transform
+        self.lamb = 1e-6
 
         directory='./datasets/FashionMNIST'
         if not os.path.exists(directory):
@@ -96,27 +99,48 @@ class FashionMNIST():
 
         self.dim = [1,28,28]
 
-        train = torch.stack([data for data, _ in list(self.train_loader.dataset)], 0)
+        train = torch.stack([data for data, _ in
+                                list(self.train_loader.dataset)], 0).cuda()
         train = train.view(train.shape[0], -1)
+        if self.logit_transform:
+            train = train * 255.0
+            train = (train + torch.rand_like(train)) / 256.0
+            train = self.lamb + (1 - 2.0 * self.lamb) * train
+            train = torch.log(train) - torch.log(1.0 - train)
+
         self.mean = train.mean(0)
-        self.std = torch.sqrt(torch.mean((train - self.mean)**2))
-        if torch.cuda.is_available():
-            self.mean = self.mean.cuda()
-            self.std = self.std.cuda()
+        self.std = ((train - self.mean)**2).view([-1] + self.dim).sum(1).mean().sqrt()
 
     def preprocess(self, x):
-        return (x.view([-1, np.prod(self.dim)]) - self.mean) / self.std
+        if self.logit_transform:
+            # apply uniform noise and renormalize
+            x = x.view([-1, np.prod(self.dim)]) * 255.0
+            x = (x + torch.rand_like(x)) / 256.0
+            x = self.lamb + (1 - 2.0 * self.lamb) * x
+            x = torch.log(x) - torch.log(1.0 - x)
+            return (x - self.mean) / self.std
+        else:
+            return (x.view([-1, np.prod(self.dim)]) - self.mean) / self.std
 
     def unpreprocess(self, x):
-        return (x * self.std + self.mean).view([-1] + self.dim)
+        if self.logit_transform:
+            x = x * self.std + self.mean
+            x = torch.sigmoid(x)
+            x = (x - self.lamb) / (1.0 - 2.0 * self.lamb)
+            return x.view([-1] + self.dim)
+        else:
+            return (x * self.std + self.mean).view([-1] + self.dim)
 
 
 class SVHN():
-    def __init__(self, batch_size, binarize=False):
+    def __init__(self, batch_size, binarize=False, logit_transform=False):
         """ [-1, 3, 32, 32]
         """
         if binarize:
             raise NotImplementedError
+
+        self.logit_transform = logit_transform
+        self.lamb = 0.05
 
         directory='./datasets/SVHN'
         if not os.path.exists(directory):
@@ -133,27 +157,48 @@ class SVHN():
 
         self.dim = [3, 32, 32]
 
-        train = torch.stack([data for data, _ in list(self.train_loader.dataset)], 0)
+        train = torch.stack([data for data, _ in
+                                list(self.train_loader.dataset)], 0).cuda()
         train = train.view(train.shape[0], -1)
+        if self.logit_transform:
+            train = train * 255.0
+            train = (train + torch.rand_like(train)) / 256.0
+            train = self.lamb + (1 - 2.0 * self.lamb) * train
+            train = torch.log(train) - torch.log(1.0 - train)
+
         self.mean = train.mean(0)
-        self.std = torch.sqrt(torch.mean((train - self.mean)**2))
-        if torch.cuda.is_available():
-            self.mean = self.mean.cuda()
-            self.std = self.std.cuda()
+        self.std = ((train - self.mean)**2).view([-1] + self.dim).sum(1).mean().sqrt()
 
     def preprocess(self, x):
-        return (x.view([-1, np.prod(self.dim)]) - self.mean) / self.std
+        if self.logit_transform:
+            # apply uniform noise and renormalize
+            x = x.view([-1, np.prod(self.dim)]) * 255.0
+            x = (x + torch.rand_like(x)) / 256.0
+            x = self.lamb + (1 - 2.0 * self.lamb) * x
+            x = torch.log(x) - torch.log(1.0 - x)
+            return (x - self.mean) / self.std
+        else:
+            return (x.view([-1, np.prod(self.dim)]) - self.mean) / self.std
 
     def unpreprocess(self, x):
-        return (x * self.std + self.mean).view([-1] + self.dim)
+        if self.logit_transform:
+            x = x * self.std + self.mean
+            x = torch.sigmoid(x)
+            x = (x - self.lamb) / (1.0 - 2.0 * self.lamb)
+            return x.view([-1] + self.dim)
+        else:
+            return (x * self.std + self.mean).view([-1] + self.dim)
 
 
 class CIFAR10():
-    def __init__(self, batch_size, binarize=False):
+    def __init__(self, batch_size, binarize=False, logit_transform=False):
         """ [-1, 3, 32, 32]
         """
         if binarize:
             raise NotImplementedError
+
+        self.logit_transform = logit_transform
+        self.lamb = 0.05
 
         directory='./datasets/CIFAR10'
         if not os.path.exists(directory):
@@ -170,27 +215,48 @@ class CIFAR10():
 
         self.dim = [3, 32, 32]
 
-        train = torch.stack([data for data, _ in list(self.train_loader.dataset)], 0)
+        train = torch.stack([data for data, _ in
+                                list(self.train_loader.dataset)], 0).cuda()
         train = train.view(train.shape[0], -1)
+        if self.logit_transform:
+            train = train * 255.0
+            train = (train + torch.rand_like(train)) / 256.0
+            train = self.lamb + (1 - 2.0 * self.lamb) * train
+            train = torch.log(train) - torch.log(1.0 - train)
+
         self.mean = train.mean(0)
-        self.std = torch.sqrt(torch.mean((train - self.mean)**2))
-        if torch.cuda.is_available():
-            self.mean = self.mean.cuda()
-            self.std = self.std.cuda()
+        self.std = ((train - self.mean)**2).view([-1] + self.dim).sum(1).mean().sqrt()
 
     def preprocess(self, x):
-        return (x.view([-1, np.prod(self.dim)]) - self.mean) / self.std
+        if self.logit_transform:
+            # apply uniform noise and renormalize
+            x = x.view([-1, np.prod(self.dim)]) * 255.0
+            x = (x + torch.rand_like(x)) / 256.0
+            x = self.lamb + (1 - 2.0 * self.lamb) * x
+            x = torch.log(x) - torch.log(1.0 - x)
+            return (x - self.mean) / self.std
+        else:
+            return (x.view([-1, np.prod(self.dim)]) - self.mean) / self.std
 
     def unpreprocess(self, x):
-        return (x * self.std + self.mean).view([-1] + self.dim)
+        if self.logit_transform:
+            x = x * self.std + self.mean
+            x = torch.sigmoid(x)
+            x = (x - self.lamb) / (1.0 - 2.0 * self.lamb)
+            return x.view([-1] + self.dim)
+        else:
+            return (x * self.std + self.mean).view([-1] + self.dim)
 
 
 class OMNIGLOT(Dataset):
-    def __init__(self, batch_size, binarize=False):
+    def __init__(self, batch_size, binarize=False, logit_transform=False):
         """ [ -1, 1, 28, 28]
         """
         if binarize:
             raise NotImplementedError
+
+        self.logit_transform = logit_transform
+        self.lamb = 1e-6
 
         directory='./datasets/OMNIGLOT'
         if not os.path.exists(directory):
@@ -217,16 +283,34 @@ class OMNIGLOT(Dataset):
 
         self.dim = [1, 28, 28]
 
-        train = torch.stack([data for data, _ in list(self.train_loader.dataset)], 0)
+        train = torch.stack([data for data, _ in
+                                list(self.train_loader.dataset)], 0).cuda()
         train = train.view(train.shape[0], -1)
+        if self.logit_transform:
+            train = train * 255.0
+            train = (train + torch.rand_like(train)) / 256.0
+            train = self.lamb + (1 - 2.0 * self.lamb) * train
+            train = torch.log(train) - torch.log(1.0 - train)
+
         self.mean = train.mean(0)
-        self.std = torch.sqrt(torch.mean((train - self.mean)**2))
-        if torch.cuda.is_available():
-            self.mean = self.mean.cuda()
-            self.std = self.std.cuda()
+        self.std = ((train - self.mean)**2 * self.dim[0]).mean().sqrt()
 
     def preprocess(self, x):
-        return (x.view([-1, np.prod(self.dim)]) - self.mean) / self.std
+        if self.logit_transform:
+            # apply uniform noise and renormalize
+            x = x.view([-1, np.prod(self.dim)]) * 255.0
+            x = (x + torch.rand_like(x)) / 256.0
+            x = self.lamb + (1 - 2.0 * self.lamb) * x
+            x = torch.log(x) - torch.log(1.0 - x)
+            return (x - self.mean) / self.std
+        else:
+            return (x.view([-1, np.prod(self.dim)]) - self.mean) / self.std
 
     def unpreprocess(self, x):
-        return (x * self.std + self.mean).view([-1] + self.dim)
+        if self.logit_transform:
+            x = x * self.std + self.mean
+            x = torch.sigmoid(x)
+            x = (x - self.lamb) / (1.0 - 2.0 * self.lamb)
+            return x.view([-1] + self.dim)
+        else:
+            return (x * self.std + self.mean).view([-1] + self.dim)

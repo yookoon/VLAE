@@ -16,10 +16,8 @@ import models
 class Experiment():
     def __init__(self, model, dataset, logit_transform, batch_size, n_epochs,
                  log_interval, z_dim, output_dist, hidden_dim, learning_rate,
-                 svi_lr, n_svi_step,
-                 n_update, update_lr,
-                 n_flow, iaf_dim=None,
-                 seed=None, base_dir='./checkpoints'):
+                 svi_lr, n_svi_step, n_update, update_lr, n_flow, iaf_dim,
+                 weight_decay=0.0, seed=None, base_dir='./checkpoints'):
         self.timestamp = datetime.now().strftime('%Y-%m-%d_%H:%M:%S')
         self.dataset = getattr(datasets, dataset)(batch_size=batch_size,
                                                   binarize=output_dist=="bernoulli",
@@ -56,19 +54,23 @@ class Experiment():
 
         torch.manual_seed(self.seed)
 
-        self.name = f'{self.timestamp}.logit_transform={logit_transform}.out_dist={output_dist}.z_dim={z_dim}.hid_dim={hidden_dim}.lr={learning_rate}'
+        self.name = (
+            f'{self.timestamp}.logit_transform={logit_transform}'
+            f'.out_dist={output_dist}.z_dim={z_dim}.hid_dim={hidden_dim}'
+            f'.lr={learning_rate}.weight_decay={weight_decay}')
         if model == "LVAE":
             self.name += f'.n_update={n_update}.update_lr={update_lr}'
         elif model == "SAVAE":
             self.name += f'.svi_lr={svi_lr}.n_svi_step={n_svi_step}'
-        elif model == "HouseHolderVAE":
+        elif model == "HF":
             self.name += f'.n_flow={n_flow}'
         elif model == "IAF":
             self.name += f'.n_flow={n_flow}.iaf_dim={iaf_dim}'
 
         self.save_dir = os.path.join(base_dir, dataset, model, self.name)
         os.makedirs(self.save_dir, exist_ok=True)
-        self.optimizer = optim.Adam(self.model.parameters(), lr=learning_rate)
+        self.optimizer = optim.Adam(self.model.parameters(), lr=learning_rate,
+                                    weight_decay=weight_decay)
 
         self.epoch = 1
         self.best_epoch = None

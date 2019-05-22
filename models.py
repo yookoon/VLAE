@@ -207,7 +207,7 @@ class VLAE(VAE):
                              epoch)
 
 
-class HouseHolderVAE(VAE):
+class HF(VAE):
     def __init__(self, dataset, z_dim, output_dist, x_dim, enc_dim, dec_dim, n_flow, **kwargs):
         super().__init__(dataset, z_dim, output_dist, x_dim, enc_dim, dec_dim)
         self.householderflow = network.HouseHolderFlow(h_dim=enc_dim, z_dim=z_dim, n_flow=n_flow)

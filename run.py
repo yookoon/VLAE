@@ -6,7 +6,7 @@ from experiment import *
 
 parser = argparse.ArgumentParser(description='VLAE')
 parser.add_argument('--model', type=str, default='VAE',
-                    help='model name')
+                    help='[VAE, VLAE, SAVAE, HF, IAF]')
 parser.add_argument('--dataset', type=str, default='MNIST',
                     help='[SVHN, MNIST, OMNIGLOT, FashionMNIST, CIFAR10]')
 parser.add_argument('--logit_transform', type=bool, default=False,
@@ -31,6 +31,8 @@ parser.add_argument('--hidden_dim', type=int, default=500,
                     help='hidden unit dimension for encoder and decoder')
 parser.add_argument('--learning_rate', type=float, default=5e-4,
                     help='Learning rate for ADAM optimizer')
+parser.add_argument('--weight_decay', type=float, default=0.0,
+                    help='L2 weight decay')
 
 # SAVAE parameters
 parser.add_argument('--svi_lr', type=float, default=5e-4,
@@ -71,6 +73,7 @@ if __name__ == "__main__":
                      n_flow=args.n_flow,
                      seed=args.seed,
                      base_dir=args.base_dir,
-                     iaf_dim=args.iaf_dim)
+                     iaf_dim=args.iaf_dim,
+                     weight_decay=args.weight_decay)
 
     exp.run()
