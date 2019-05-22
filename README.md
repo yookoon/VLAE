@@ -24,7 +24,7 @@ python run.py --dataset=MNIST --output_dist=gaussian --model=VLAE --n_epochs=200
 ```
 `run.py` will automatically download the dataset at the first run and train the model for `n_epochs`. After the training is finished, it will evaluate the log-likelihood using the best checkpoint using importance sampling (5000 samples by default). 
 
-This repo also includes our implementations of [VAE](https://arxiv.org/abs/1312.6114), [SA-VAE](https://arxiv.org/abs/1802.02550), [HF](https://arxiv.org/abs/1611.09630), [IAF](https://arxiv.org/abs/1606.04934) models which we used as baselines for our experiments. 
+This repo also includes our implementations of the [VAE](https://arxiv.org/abs/1312.6114), [SA-VAE](https://arxiv.org/abs/1802.02550), [HF](https://arxiv.org/abs/1611.09630), [IAF](https://arxiv.org/abs/1606.04934) models which we used as baselines for our experiments. 
 Type `python run.py --help` to see help messages on the arguments.
 
 On the other hand, you can manually evaluate a checkpoint (note that you will have to use the same model setting arguments to corretly load the model)
