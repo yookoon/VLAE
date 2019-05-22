@@ -41,7 +41,7 @@ tensorboard --logdir=<path_to_your_checkpoint_direcoty
 
 ## Notes
 - We have slightly changed the implementation for data scale normalization, so the scale of the log-likelihood results is bit different to those reported in the paper.
-- The data is normalized so that the reconstruction error `torch.sum((x - mu)**2)` will be initially about d (not 1.0) where d is the data dimension (e.g. 784 for MNIST). The appendix of the paper was incorrectly stated on this. 
+- The data is normalized so that the reconstruction error `torch.sum((x - mu)**2)` will be initially about d (not 1.0) where d is the image size (e.g. 28x28 = 784 for MNIST). The appendix of the paper was incorrectly stated on this. 
 - [Some](https://arxiv.org/abs/1605.08803) [papers](https://arxiv.org/abs/1705.07057) preprocess data by adding uniform noise to pixel values, then applying a logit transformation on the data in order to prevent the likelihood from exploding and reduce boundary effects. Though we did not use this in the paper, we have implemented it which can be used by adding an argument `logit_transform=True`. We observe similar experimental results to the paper.
 
 ## Results
