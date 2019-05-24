@@ -100,6 +100,9 @@ class Experiment():
             if isinstance(m, nn.Linear):
                 nn.init.kaiming_uniform_(m.weight, a=math.pow(2, 1.0/3), mode='fan_out')
 
+        if self.output_dist == 'gaussian':
+            self.model.decoder.logvar.data = self.dataset.logvar
+
     def save_model(self, epoch):
         save_path = os.path.join(self.save_dir, str(epoch) + '.pkl')
         print(colorful.bold_yellow('Save model parameters to {}'.format(save_path)).styled_string)
@@ -127,7 +130,6 @@ class Experiment():
             train_loss += loss.item() * len(data)
             assert not np.isnan(loss.item())
 
-            # torch.nn.utils.clip_grad_norm_(self.model.parameters(), 10)
             self.optimizer.step()
 
             if self.log_interval is not None:
