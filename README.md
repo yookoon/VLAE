@@ -36,7 +36,7 @@ python eval.py --dataset=MNIST --output_dist=gaussian --model=VLAE --hidden_dim=
 Basic Tensorboard logging functionality is implemented. It includes loss curves and image sample visualizations. The tensorboard event file is saved at the checkpoint directory of the model.
 To launch a tensorboard, run:
 ```
-tensorboard --logdir=<path_to_your_checkpoint_direcoty
+tensorboard --logdir=<path_to_your_checkpoint_direcoty>
 ```
 
 ## Notes
