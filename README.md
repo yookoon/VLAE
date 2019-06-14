@@ -1,6 +1,7 @@
 # VLAE
 Pytorch implementation for our paper [**Variational Laplace Autoencoders**](http://proceedings.mlr.press/v97/park19a.html) in ICML 2019.
-[poster](https://github.com/yookoon/VLAE/blob/master/misc/poster.pdf)[slides](https://github.com/yookoon/VLAE/blob/master/misc/slides.pdf)
+
+[[poster]](https://github.com/yookoon/VLAE/blob/master/misc/poster.pdf)[[slides]](https://github.com/yookoon/VLAE/blob/master/misc/slides.pdf)
 
 ## Prerequisite
 This code assumes GPU computation.
